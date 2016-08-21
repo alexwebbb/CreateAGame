@@ -2,7 +2,7 @@
 using System.Collections;
 
 [RequireComponent (typeof (NavMeshAgent))]
-public class Enemy : MonoBehaviour {
+public class Enemy : LivingEntity {
 
     public float refreshRate = .25f;
 
@@ -11,7 +11,8 @@ public class Enemy : MonoBehaviour {
     private Vector3 targetPosition;
 
 
-    void Start () {
+    protected override void Start () {
+        base.Start();
         pathfinder = GetComponent<NavMeshAgent>();
         target = GameObject.FindGameObjectWithTag("Player").transform;
 
@@ -24,7 +25,7 @@ public class Enemy : MonoBehaviour {
 	}
 
     IEnumerator UpdatePath() {
-        while (target != null) {
+        while (target != null && !dead) {
             targetPosition = new Vector3(target.position.x, 0, target.position.z);
             pathfinder.SetDestination(targetPosition);
             yield return new WaitForSeconds(refreshRate); 
