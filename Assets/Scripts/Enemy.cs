@@ -10,6 +10,7 @@ public class Enemy : LivingEntity {
     public float atkDistThreshhold = .5f;
     public float timeBetweenAttacks = 1;
     public float attackSpeed = 3;
+    public float damage = 1;
 
     Material skinMaterial;
     Color originalColor;
@@ -18,34 +19,47 @@ public class Enemy : LivingEntity {
 
     private NavMeshAgent pathfinder;
     private Transform target;
+    private LivingEntity targetEntity;
     
     private float sqrAttackDistanceThreshhold;
     private float nextAttackTime;
     private float myColRadius;
     private float targetColRadius;
 
+    bool hasTarget;
+
     protected override void Start () {
         base.Start();
         pathfinder = GetComponent<NavMeshAgent>();
-        target = GameObject.FindGameObjectWithTag("Player").transform;
 
         //set state
-        currentState = State.Chasing;
+        if (GameObject.FindGameObjectWithTag("Player") && (target = GameObject.FindGameObjectWithTag("Player").transform)) {
+            currentState = State.Chasing;
+            hasTarget = true;
+            targetEntity = target.GetComponent<LivingEntity>();
+            targetEntity.OnDeath += OnTargetDeath;
+            //initialize variables
+            myColRadius = GetComponent<CapsuleCollider>().radius;
+            targetColRadius = target.GetComponent<CapsuleCollider>().radius;
+            sqrAttackDistanceThreshhold = Mathf.Pow(atkDistThreshhold + myColRadius + targetColRadius, 2);
+            StartCoroutine(UpdatePath());
+        }
 
-        //initialize variables
-        myColRadius = GetComponent<CapsuleCollider>().radius;
-        targetColRadius = target.GetComponent<CapsuleCollider>().radius;
-        sqrAttackDistanceThreshhold = Mathf.Pow(atkDistThreshhold + myColRadius + targetColRadius, 2);
         // color
         skinMaterial = GetComponent<Renderer>().material;
         originalColor = skinMaterial.color;
 
-        StartCoroutine(UpdatePath());
+        
 	
 	}
+
+    void OnTargetDeath() {
+        hasTarget = false;
+        currentState = State.Idle;
+    }
 	
 	void Update () {
-        if (Time.time > nextAttackTime) {
+        if (hasTarget && Time.time > nextAttackTime) {
             float sqrDistanceToTarget = (target.position - transform.position).sqrMagnitude;
             if (sqrDistanceToTarget < sqrAttackDistanceThreshhold) {
                 nextAttackTime = Time.time + timeBetweenAttacks;
@@ -66,8 +80,15 @@ public class Enemy : LivingEntity {
         float percent = 0;
 
         skinMaterial.color = Color.red;
+        bool hasAppliedDamage = false;
 
         while (percent <= 1) {
+
+            if(percent >= .5f && !hasAppliedDamage) {
+                hasAppliedDamage = true;
+                targetEntity.TakeDamage(damage);
+            }
+
             percent += Time.deltaTime * attackSpeed;
             float interpolation = (-Mathf.Pow(percent, 2) + percent) * 4;
             transform.position = Vector3.Lerp(originalPostion, attackPosition, interpolation);
@@ -78,15 +99,15 @@ public class Enemy : LivingEntity {
         currentState = State.Chasing;
         pathfinder.enabled = true;
     }
-
+    
     IEnumerator UpdatePath() {
         if(dead) yield break;
-        while (target != null) {
+        while (hasTarget) {
             if (currentState == State.Chasing) {
                 Vector3 dirToTarget = (target.position - transform.position).normalized;
                 Vector3 targetPosition = target.position - dirToTarget * 
                     (myColRadius + targetColRadius + atkDistThreshhold/2);
-                pathfinder.SetDestination(targetPosition); 
+                if(!dead) pathfinder.SetDestination(targetPosition); 
             }
             yield return new WaitForSeconds(refreshRate); 
         }
