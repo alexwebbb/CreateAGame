@@ -4,6 +4,8 @@ using System.Collections;
 [RequireComponent (typeof (NavMeshAgent))]
 public class Enemy : LivingEntity {
 
+    public ParticleSystem deathEffect;
+
     public enum State { Idle, Chasing, Attacking };
 
     public float refreshRate = .25f;
@@ -68,6 +70,15 @@ public class Enemy : LivingEntity {
         }
 
 	}
+
+    public override void TakeHit(float damage, Vector3 hitPoint, Vector3 hitDirection) {
+
+        if(damage >= health) {
+            Destroy((GameObject)Instantiate(deathEffect.gameObject, hitPoint, 
+                Quaternion.FromToRotation(Vector3.forward, hitDirection)), deathEffect.startLifetime);
+        }
+        base.TakeHit(damage, hitPoint, hitDirection);
+    }
 
     IEnumerator Attack() {
         currentState = State.Attacking;
