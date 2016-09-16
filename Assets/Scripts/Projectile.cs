@@ -4,6 +4,7 @@ using System.Collections;
 public class Projectile : MonoBehaviour {
 
     public LayerMask collisionMask;
+    public Color trailColor;
     public float damage = 1;
     public float lifetime = 3;
 
@@ -21,6 +22,8 @@ public class Projectile : MonoBehaviour {
 
         Collider[] initialCollisions = Physics.OverlapSphere(transform.position, .1f, collisionMask);
         if (initialCollisions.Length > 0) OnHitObject(initialCollisions[0], transform.position);
+
+        GetComponent<TrailRenderer>().material.SetColor("_TintColor", trailColor);
     }
 
 	void Update () {
