@@ -30,30 +30,45 @@ public class Enemy : LivingEntity {
 
     bool hasTarget;
 
-    protected override void Start () {
-        base.Start();
+    void Awake() {
         pathfinder = GetComponent<NavMeshAgent>();
 
         //set state
         if (GameObject.FindGameObjectWithTag("Player") && (target = GameObject.FindGameObjectWithTag("Player").transform)) {
-            currentState = State.Chasing;
             hasTarget = true;
             targetEntity = target.GetComponent<LivingEntity>();
-            targetEntity.OnDeath += OnTargetDeath;
             //initialize variables
             myColRadius = GetComponent<CapsuleCollider>().radius;
             targetColRadius = target.GetComponent<CapsuleCollider>().radius;
+            // math optimization
             sqrAttackDistanceThreshhold = Mathf.Pow(atkDistThreshhold + myColRadius + targetColRadius, 2);
+        }
+    }
+
+    protected override void Start () {
+        base.Start();
+
+        if (hasTarget) {
+            currentState = State.Chasing;
+            targetEntity.OnDeath += OnTargetDeath;
+
             StartCoroutine(UpdatePath());
         }
+    }
 
-        // color
+    public void SetCharacteristics(float moveSpeed, int hitsToKillPlayer, float enemyHealth, Color skinColor) {
+        pathfinder.speed = moveSpeed;
+
+        if(hasTarget) {
+            damage = Mathf.Ceil(targetEntity.startingHealth / hitsToKillPlayer);
+        }
+
+        startingHealth = enemyHealth;
+
         skinMaterial = GetComponent<Renderer>().material;
+        skinMaterial.color = skinColor;
         originalColor = skinMaterial.color;
-
-        
-	
-	}
+    }
 
     void OnTargetDeath() {
         hasTarget = false;
