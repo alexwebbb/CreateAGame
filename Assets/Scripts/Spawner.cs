@@ -80,8 +80,8 @@ public class Spawner : MonoBehaviour {
         }
         Material tileMate = spawnTile.GetComponent<Renderer>().material;
 
-        // color setting bug here when multiple spawns occur
-        Color initialColor = tileMate.color;
+        // color bug fixed
+        Color initialColor = Color.white;
         Color flashColor = Color.red;
 
         float spawnTimer = 0;

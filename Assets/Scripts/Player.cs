@@ -7,6 +7,8 @@ public class Player : LivingEntity {
 
     public float moveSpeed = 5;
 
+    public Crosshairs crosshairs;
+
     private Vector3 moveInput;
     private Vector3 moveVelocity;
     private Camera viewCamera;
@@ -33,12 +35,14 @@ public class Player : LivingEntity {
 
         // Look Input
         ray = viewCamera.ScreenPointToRay(Input.mousePosition);
-        groundPlane = new Plane(Vector3.up, Vector3.zero);
+        groundPlane = new Plane(Vector3.up, Vector3.up * gunController.GunHeight);
 
         if (groundPlane.Raycast(ray, out rayDistance)) {
             Vector3 point = ray.GetPoint(rayDistance);
             // Debug.DrawLine(ray.origin, point, Color.red);
             myController.LookAt(point);
+            crosshairs.transform.position = point;
+            crosshairs.DetectTargets(ray);
         }
 
         // Weapon Input
