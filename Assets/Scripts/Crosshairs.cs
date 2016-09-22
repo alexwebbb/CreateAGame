@@ -3,13 +3,16 @@ using System.Collections;
 
 public class Crosshairs : MonoBehaviour {
 
+    bool devMode;
+
     public LayerMask targetMask;
     public SpriteRenderer dot;
     public Color dotHighlightColor;
     Color originalDotColor;
 
     void Start () {
-        Cursor.visible = false;
+        devMode = FindObjectOfType<ControlPanel>().devMode;
+        if(!devMode) Cursor.visible = false;
         originalDotColor = dot.color;
     }
 

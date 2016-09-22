@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Spawner : MonoBehaviour {
 
-    public bool devMode;
+    bool devMode;
 
     public Wave[] waves;
     public Enemy enemy;
@@ -31,6 +31,7 @@ public class Spawner : MonoBehaviour {
     public event System.Action<int> OnNewWave;
 
     void Start() {
+        devMode = FindObjectOfType<ControlPanel>().devMode;
         playerEntity = FindObjectOfType<Player>();
         playerT = playerEntity.transform;
 

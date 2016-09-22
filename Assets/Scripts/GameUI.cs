@@ -5,10 +5,13 @@ using UnityEngine.SceneManagement;
 
 public class GameUI : MonoBehaviour {
 
+    bool devMode;
+
     public Image fadePlane;
     public GameObject gameOverUi;
 
 	void Start () {
+        devMode = FindObjectOfType<ControlPanel>().devMode;
         FindObjectOfType<Player>().OnDeath += OnGameOver;
 	}
 
@@ -31,7 +34,7 @@ public class GameUI : MonoBehaviour {
 	
     // UI Input
     public void StartNewGame() {
-        Cursor.visible = false;
+        if(!devMode) Cursor.visible = false;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
